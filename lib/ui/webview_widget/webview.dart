@@ -149,8 +149,4 @@ class _WebviewState extends State<Webview> {
     print("Navigating to $url");
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }
