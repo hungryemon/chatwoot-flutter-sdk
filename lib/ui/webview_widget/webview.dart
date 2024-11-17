@@ -58,6 +58,7 @@ class _WebviewState extends State<Webview> {
 
   @override
   void initState() {
+    initialize();
     super.initState();
   }
 
@@ -148,5 +149,4 @@ class _WebviewState extends State<Webview> {
     // You may implement navigation behavior here if needed
     print("Navigating to $url");
   }
-
 }
