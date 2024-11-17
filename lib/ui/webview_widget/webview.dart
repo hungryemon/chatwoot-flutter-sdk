@@ -78,7 +78,7 @@ class _WebviewState extends State<Webview> {
 
   @override
   Widget build(BuildContext context) {
-    return InAppWebView(
+    return widget.widgetUrl.isEmpty ? Container() : InAppWebView(
       initialUrlRequest: URLRequest(url: WebUri(webviewUrl)),
       initialSettings: InAppWebViewSettings(
         javaScriptEnabled: true,
