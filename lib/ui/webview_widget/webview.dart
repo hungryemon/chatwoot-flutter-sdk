@@ -4,7 +4,6 @@ import 'package:chatwoot_sdk/ui/webview_widget/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
-
 ///Chatwoot webview widget
 /// {@category FlutterClientSdk}
 
@@ -17,7 +16,6 @@ class Webview extends StatefulWidget {
 
   /// See [ChatwootWidget.closeWidget]
   final void Function()? closeWidget;
-
 
   /// See [ChatwootWidget.onLoadStarted]
   final void Function()? onLoadStarted;
@@ -40,7 +38,8 @@ class Webview extends StatefulWidget {
     this.onLoadProgress,
     this.onLoadCompleted,
   }) : super(key: key) {
-    widgetUrl = "${baseUrl}/widget?website_token=${websiteToken}&locale=${locale}";
+    widgetUrl =
+        "${baseUrl}/widget?website_token=${websiteToken}&locale=${locale}";
 
     injectedJavaScript = generateScripts(
       user: user,
@@ -60,14 +59,20 @@ class _WebviewState extends State<Webview> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      webviewUrl = widget.widgetUrl;
-      final cwCookie = await StoreHelper.getCookie();
-      if (cwCookie.isNotEmpty) {
-        webviewUrl = "${webviewUrl}&cw_conversation=${cwCookie}";
-      }
-      setState(() {});
-    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  initialize() async {
+    webviewUrl = widget.widgetUrl;
+    final cwCookie = await StoreHelper.getCookie();
+    if (cwCookie.isNotEmpty) {
+      webviewUrl = "${webviewUrl}&cw_conversation=${cwCookie}";
+    }
   }
 
   @override
@@ -80,29 +85,31 @@ class _WebviewState extends State<Webview> {
         useShouldOverrideUrlLoading: true,
         allowsInlineMediaPlayback: true,
         allowFileAccess: true,
-        
       ),
-      
+
       onWebViewCreated: (controller) {
         _controller = controller;
 
         // Inject JavaScript when the page is loaded
-        _controller.addJavaScriptHandler(handlerName: "ReactNativeWebView", callback: (args) {
-          final message = getMessage(args[0]);
-          if (isJsonString(message)) {
-            final parsedMessage = jsonDecode(message);
-            final eventType = parsedMessage["event"];
-            final type = parsedMessage["type"];
-            if (eventType == 'loaded') {
-              final authToken = parsedMessage["config"]["authToken"];
-              StoreHelper.storeCookie(authToken);
-              _controller.evaluateJavascript(source: widget.injectedJavaScript);
-            }
-            if (type == 'close-widget') {
-              widget.closeWidget?.call();
-            }
-          }
-        });
+        _controller.addJavaScriptHandler(
+            handlerName: "ReactNativeWebView",
+            callback: (args) {
+              final message = getMessage(args[0]);
+              if (isJsonString(message)) {
+                final parsedMessage = jsonDecode(message);
+                final eventType = parsedMessage["event"];
+                final type = parsedMessage["type"];
+                if (eventType == 'loaded') {
+                  final authToken = parsedMessage["config"]["authToken"];
+                  StoreHelper.storeCookie(authToken);
+                  _controller.evaluateJavascript(
+                      source: widget.injectedJavaScript);
+                }
+                if (type == 'close-widget') {
+                  widget.closeWidget?.call();
+                }
+              }
+            });
       },
       onLoadStart: (controller, url) {
         widget.onLoadStarted?.call();
@@ -127,7 +134,7 @@ class _WebviewState extends State<Webview> {
       onReceivedError: (controller, request, error) {
         print("Web resource error: $error");
       },
-      
+
       // androidOnShowFileChooser: widget.onAttachFile != null
       //     ? (controller, filePathsCallback, fileChooserParams) async {
       //         final selectedFiles = await widget.onAttachFile!.call();
